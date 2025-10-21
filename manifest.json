@@ -1,0 +1,15 @@
+{
+  "name": "Fido y Lola Game",
+  "short_name": "FidoLola",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#030011",
+  "theme_color": "#030011",
+  "icons": [
+    {
+      "src": "assets/icons/fidoylola-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
