@@ -15,3 +15,43 @@ async function onGameOver(){await fetchTop();const enters=(!top10||top10.length<
 function showFinalScene(){let t0=performance.now();const dur=4000;function anim(now){const dt=now-t0;const alpha=Math.min(1,dt/dur);ctx.clearRect(0,0,W,H);ctx.fillStyle=`rgba(0,0,0,${alpha*0.85})`;ctx.fillRect(0,0,W,H);const grd=ctx.createLinearGradient(W*0.6,H*0.6,W*0.9,H*0.1);grd.addColorStop(0,`rgba(255,190,100,${alpha*0.7})`);grd.addColorStop(1,`rgba(255,220,140,${alpha*0.0})`);ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='28px sans-serif';ctx.textAlign='center';ctx.fillText('🪩 FIN DE LA FIESTA 🪩',W/2,H/2-20);ctx.fillStyle=`rgba(0,0,0,${Math.min(0.9,alpha)})`;ctx.beginPath();ctx.ellipse(W/2,H/2+40,40,80,0,0,Math.PI*2);ctx.fill();if(dt<dur+1200)requestAnimationFrame(anim);else{fetchTop();}}requestAnimationFrame(anim)}
 c.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const rect=c.getBoundingClientRect();const x=(t.clientX-rect.left)*(c.width/rect.width);if(phase==='menu'){phase='select';return;}if(phase==='select'){if(x<W/2)selected='fido';else selected='lola';phase='play';score=0;lives=3;bags=[];streaks=[];lifeStripes=[];loadAudio();audio.music.play();return;}if(phase==='play'){return;}})
 let spawnTimer=0;loadAudio();fetchTop();function loop(now){update();ctx.clearRect(0,0,W,H);if(phase==='menu')drawMenu();else if(phase==='select')drawSelect();else if(phase==='play')drawGame();requestAnimationFrame(loop);}loop();
+c.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const rect = c.getBoundingClientRect();
+  const x = (t.clientX - rect.left) * (c.width / rect.width);
+
+  // 🎛️ Menú principal → ir a selección
+  if (phase === 'menu') {
+    phase = 'select';
+    return;
+  }
+
+  // 👯 Selección de personaje
+  if (phase === 'select') {
+    if (x < W / 2) selected = 'fido';
+    else selected = 'lola';
+    phase = 'play';
+    score = 0;
+    lives = 3;
+    bags = [];
+    streaks = [];
+    lifeStripes = [];
+    loadAudio();
+    audio.music.play();
+    return;
+  }
+
+  // 🎮 Juego en curso → mover izquierda/derecha
+  if (phase === 'play') {
+    if (x < W / 2) {
+      player.x -= 40; // Mueve a la izquierda
+    } else {
+      player.x += 40; // Mueve a la derecha
+    }
+
+    // Limita dentro de la pantalla
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.w > W) player.x = W - player.w;
+  }
+});
