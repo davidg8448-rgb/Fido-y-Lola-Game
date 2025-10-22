@@ -1,0 +1,21 @@
+{
+  "name": "Fido y Lola Game",
+  "short_name": "FidoLola",
+  "description": "Fido y Lola van de marcha — un juego de luces y ritmo 🎵",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff00ff",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
