@@ -1,2 +1,2 @@
-# Fido y Lola Canvas package
-Juego optimizado para móvil, canvas-only, PWA ready.
+# Fido y Lola van de marcha
+Paquete PWA listo for Netlify.

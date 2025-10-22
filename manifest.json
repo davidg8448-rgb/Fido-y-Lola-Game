@@ -1,13 +1,13 @@
 {
-  "name": "Fido y Lola Game",
+  "name": "Fido y Lola van de marcha",
   "short_name": "FidoLola",
-  "description": "Juego arcade vertical de discoteca. Esquiva y recoge vidas.",
+  "description": "Fido y Lola van de marcha - juego arcade vertical con est\u00e9tica discoteca.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#ff00ff",
   "icons": [
     {
       "src": "icons/icon-192.svg",

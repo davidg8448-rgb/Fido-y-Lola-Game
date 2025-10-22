@@ -1,4 +1,4 @@
 
 :root{--bg:#050016;--neon1:#ff5edf;--neon2:#7a5cff;--neon3:#2df6ff}
 html,body{height:100%;margin:0;background:#000;color:#fff;font-family:Inter,system-ui,Arial;display:flex;align-items:center;justify-content:center}
-canvas{width:360px;height:640px;border-radius:14px;background:#050018;touch-action:none;display:block}
+#gameCanvas{width:100vw;height:100vh;max-width:420px;max-height:780px;border-radius:12px;background:#050018;touch-action:none;display:block}
