@@ -13,5 +13,9 @@
 <body>
 <canvas id="gameCanvas" aria-label="Fido y Lola Game"></canvas>
 <script src="main.js"></script>
-</body>
+</body><script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+  }
+</script>
 </html>
