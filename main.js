@@ -1,4 +1,4 @@
-// main.js - Fido y Lola van de marcha (mejorado: dificultad progresiva + flash neón nivel + adaptabilidad)
+// main.js - Fido y Lola van de marcha (corregido: incluye loadAudio + main loop)
 const API_BASE = "https://fidoylola-1.onrender.com/api/scores";
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -22,14 +22,12 @@ fitCanvasToScreen();
 // Estado del juego
 let phase = 'menu', selected = 'fido', score = 0, level = 1, lives = 3, maxLives = 5;
 let spawnTimer = 0, bags = [], lifeStripes = [];
-let baseSpeed = 1.4; // 🚀 más difícil desde el inicio
-const speedIncrease = 0.22; // más progresivo
+let baseSpeed = 1.4; // más difícil desde el inicio
+const speedIncrease = 0.22;
 const maxMusicRate = 2.1;
 let audio = {}, audioUnlocked = false;
-let levelFlash = 0, levelTextTimer = 0; // efectos visuales
+let levelFlash = 0, levelTextTimer = 0;
 let lastLevel = 1;
-
-// Jugador
 let player = { x: BASE_W / 2 - 28, y: BASE_H - 180, w: 56, h: 76 };
 
 // --- AUDIO ---
@@ -170,8 +168,7 @@ function spawnLifeStripe() {
 function update() {
   if (phase !== 'play') return;
   spawnTimer++;
-
-  const spawnInterval = Math.max(24, Math.floor(50 - level * 3)); // más rápido
+  const spawnInterval = Math.max(24, Math.floor(50 - level * 3));
   if (spawnTimer > spawnInterval) {
     spawnTimer = 0;
     if (Math.random() < 0.16 + level * 0.01) spawnPink();
@@ -179,7 +176,7 @@ function update() {
     if (Math.random() < 0.08 + level * 0.01) spawnPink();
   }
 
-  // Movimiento de bolsas
+  // move bags
   for (let i = bags.length - 1; i >= 0; i--) {
     const b = bags[i];
     b.vy += 0.035 * baseSpeed + level * 0.009;
@@ -193,7 +190,7 @@ function update() {
     }
   }
 
-  // Movimiento de cubatas
+  // move life stripes
   for (let i = lifeStripes.length - 1; i >= 0; i--) {
     const s = lifeStripes[i];
     s.y += s.vy; s.life--;
@@ -204,16 +201,13 @@ function update() {
     }
   }
 
-  // Subida de nivel con efecto
+  // level up with effects
   if (score > level * 300) {
     level++;
     baseSpeed += speedIncrease;
     levelFlash = 60; levelTextTimer = 80;
     try { audio.powerup.play(); } catch (e) {}
-    try {
-      if (audio.music_loop)
-        audio.music_loop.playbackRate = Math.min(maxMusicRate, (audio.music_loop.playbackRate || 1) + 0.07);
-    } catch (e) {}
+    try { if (audio.music_loop) audio.music_loop.playbackRate = Math.min(maxMusicRate, (audio.music_loop.playbackRate || 1) + 0.07); } catch (e) {}
   }
 }
 
@@ -225,10 +219,7 @@ async function onGameOver() {
     const name = prompt('¡Top10! Escribe tu nombre:', 'Jugador');
     if (name) await submitScore(name);
   }
-  try {
-    if (audio.music_loop) audio.music_loop.pause();
-    if (audio.dj_voice) audio.dj_voice.play();
-  } catch (e) {}
+  try { if (audio.music_loop) audio.music_loop.pause(); if (audio.dj_voice) audio.dj_voice.play(); } catch (e) {}
   showFinalScene();
   phase = 'menu';
 }
@@ -266,13 +257,19 @@ async function render() {
         ctx.fillText(text, BASE_W / 2, 100 + i * 26);
       }
     }).catch(() => {});
+  } else if (phase === 'select') {
+    drawTextCentered('Selecciona personaje', 48, 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Toca IZQ = Fido   |   DER = Lola', BASE_W / 2, 120);
+    drawFido(54, 140, 96, 160);
+    drawLola(210, 140, 96, 160);
   } else if (phase === 'play') {
     drawLifeStripes(); drawBags(); drawPlayer(); drawHUD();
     if (levelTextTimer > 0) {
       levelTextTimer--;
       ctx.font = 'bold 30px sans-serif'; ctx.fillStyle = `rgba(255,255,255,${levelTextTimer / 80})`;
-      ctx.textAlign = 'center';
-      ctx.fillText(`¡Nivel ${level}!`, BASE_W / 2, BASE_H / 2);
+      ctx.textAlign = 'center'; ctx.fillText(`¡Nivel ${level}!`, BASE_W / 2, BASE_H / 2);
     }
   }
 }
@@ -281,13 +278,24 @@ function drawTextCentered(text, y, size = 18) {
   ctx.textAlign = 'center'; ctx.fillText(text, BASE_W / 2, y);
 }
 
+// --- DRAW CHARACTERS (simplificados) ---
+function drawFido(x, y, w, h) {
+  ctx.fillStyle = '#6b9be6'; roundRect(x, y + h * 0.25, w, h * 0.6, 8); ctx.fill();
+  ctx.fillStyle = '#f4d8bf'; ctx.beginPath(); ctx.arc(x + w / 2, y + 18, 12, 0, Math.PI * 2); ctx.fill();
+}
+function drawLola(x, y, w, h) {
+  ctx.fillStyle = '#000'; roundRect(x, y + h * 0.2, w, h * 0.22, 6); ctx.fill();
+  ctx.fillStyle = '#5478a8'; roundRect(x + 6, y + h * 0.52, w - 12, h * 0.28, 8); ctx.fill();
+  ctx.fillStyle = '#f4d8bf'; ctx.beginPath(); ctx.arc(x + w / 2, y + 18, 12, 0, Math.PI * 2); ctx.fill();
+}
+
 // --- INPUT ---
 let touchStartX = 0;
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   unlockAudio();
   const t = e.touches[0]; const rect = canvas.getBoundingClientRect();
-  const x = (t.clientX - rect.left) * (canvas.width / rect.width);
+  const x = (t.clientX - rect.left) * (canvas.width / rect.width) / (window.devicePixelRatio || 1);
   if (phase === 'menu') { phase = 'select'; return; }
   if (phase === 'select') { selected = (x < BASE_W / 2) ? 'fido' : 'lola'; phase = 'play'; resetGame(); try { audio.music_loop.play(); } catch (e) {} return; }
   if (phase === 'play') {
@@ -321,4 +329,17 @@ function resetGame() {
   try { if (audio.music_loop) audio.music_loop.playbackRate = 1.0; } catch (e) {}
 }
 
-//
+// --- MAIN LOOP (FALTABA ANTES) ---
+loadAudio(); // carga audio
+let lastFrame = performance.now();
+function mainLoop(now) {
+  const dt = now - lastFrame;
+  lastFrame = now;
+  update();
+  render();
+  requestAnimationFrame(mainLoop);
+}
+requestAnimationFrame(mainLoop);
+
+// Exponer utilidades para debug
+window.__FidoLola = { spawnPink, spawnLifeStripe, resetGame, getState: () => ({ phase, score, level, lives, baseSpeed }) };
